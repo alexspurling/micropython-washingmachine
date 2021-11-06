@@ -1,0 +1,4 @@
+
+import washing
+
+washing.run()
