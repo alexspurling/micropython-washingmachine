@@ -69,7 +69,7 @@ class Lis3dh(I2CDevice):
 
         # Duration the acceleration must be above the threshold before triggering the
         # interrupt. 50/1hz = 5s
-        self.write_reg(self.INT1_DURATION, 5)
+        self.set_duration(5)
 
         # Read the reference register to set the reference acceleration values against which
         # we compare current values for interrupt generation
@@ -84,13 +84,17 @@ class Lis3dh(I2CDevice):
 
     def self_check(self):
         who_am_i = self.read_reg(self.WHO_AM_I)
-        print(f'Got who am i id: {who_am_i}')
         if who_am_i != self.WHO_AM_I_ID:
             raise Exception(f'Did not get expected whoami id from Lis3dh I2C device: {who_am_i}')
 
     def set_sensitivity(self, threshold):
         # Threshold as a multiple of 16mg. 4 * 16 = 64mg
         self.write_reg(self.INT1_THS, threshold)
+
+    def set_duration(self, duration):
+        # Duration the acceleration must be above the threshold before triggering the
+        # interrupt. 5/1hz = 5s
+        self.write_reg(self.INT1_DURATION, duration)
 
     def get_accel(self):
 

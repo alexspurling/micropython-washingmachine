@@ -1,25 +1,5 @@
-import network
-import time
-import microWebCli as MicroWebCli
+from microWebCli import MicroWebCli
 import secrets
-
-
-def current_milli_time():
-    return round(time.time_ns() / 1000000)
-
-
-def do_connect():
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    if not wlan.isconnected():
-        print(f'Connecting to {secrets.WIFI_SSID}')
-        wlan.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
-        loop = 0
-        while not wlan.isconnected():
-            print(f'Connecting... {loop}')
-            time.sleep(0.1)
-            loop += 1
-    print('network config:', wlan.ifconfig())
 
 
 def get_bot():
@@ -27,20 +7,46 @@ def get_bot():
     return MicroWebCli.GETRequest(url)
 
 
-def send_message():
-    url = 'https://api.telegram.org/bot/sendMessage'
+def send_message(message):
+    url = f'https://api.telegram.org/bot{secrets.TELEGRAM_API_KEY}/sendMessage'
     data = {
         'chat_id': secrets.TELEGRAM_CHAT_ID,
-        'text': 'Yo dawg its me'
+        'text': message
     }
     return MicroWebCli.JSONRequest(url, data)
 
 
-start = current_milli_time()
-do_connect()
-time_taken = current_milli_time() - start
-print(f'Connected in: {time_taken}ms')
+def get_messages():
+    # Get the id of the last update that we saw
+    last_update_filename = 'lastupdateid.txt'
 
+    try:
+        with open(last_update_filename, 'r') as f:
+            last_update_id = f.readline()
+    except Exception:
+        last_update_id = None
 
+    print(f'Using last update id: {last_update_id}')
 
-print('telegram done')
+    url = f'https://api.telegram.org/bot{secrets.TELEGRAM_API_KEY}/getUpdates'
+
+    data = None
+    if last_update_id:
+        data = {"offset": int(last_update_id)}
+
+    messages = MicroWebCli.JSONRequest(url, data)
+
+    if messages is None:
+        messages = {}
+
+    if messages.get('result'):
+        last_message_update_id = messages['result'][-1].get('update_id')
+        if last_message_update_id:
+            new_last_message_update_id = last_message_update_id + 1
+            print('Setting last update id to:', new_last_message_update_id)
+            with open(last_update_filename, 'w') as f:
+                f.write(str(new_last_message_update_id))
+        else:
+            print('Did not find update_id in messages')
+
+    return messages

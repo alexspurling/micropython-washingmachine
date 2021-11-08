@@ -9,7 +9,7 @@
 4. Flash your device and install the firmware with esptool
    ```
    esptool.py --chip esp32 --port /dev/tty.usbserial-01613E00 erase_flash
-   esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20190125-v1.10.bin
+   esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20210902-v1.17.bin
    ```
 5. Install mpremote
    ```
