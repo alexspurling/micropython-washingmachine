@@ -56,6 +56,7 @@ class Lis3dh(I2CDevice):
         self.write_reg(self.CTRL_REG4, 0x88)
 
         # 2 Write 09h into CTRL_REG2 // High-pass filter enabled on data and interrupt1
+        # 00001001
         self.write_reg(self.CTRL_REG2, 0x09)
 
         # 3 Write 40h into CTRL_REG3 // Interrupt driven to INT1 pad

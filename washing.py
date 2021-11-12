@@ -13,7 +13,7 @@ LED_PIN = 23
 INT_PIN = 32
 BATTERY_EN_PIN = 14
 BATTERY_PIN = 35
-
+DELAY_BEFORE_NOTIFICATION = 30 # 30 mins
 
 def do_connect():
     wlan = network.WLAN(network.STA_IF)
@@ -118,7 +118,7 @@ class WashingMachine:
         print(result)
 
     def sleep_before_notification(self):
-        self.sleep(10 * 60 * 1000)
+        self.sleep(DELAY_BEFORE_NOTIFICATION * 60 * 1000)
 
     def wait_for_next_wake(self):
         wake1 = Pin(INT_PIN, mode=Pin.IN)
