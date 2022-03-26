@@ -13,7 +13,7 @@ LED_PIN = 23
 INT_PIN = 32
 BATTERY_EN_PIN = 14
 BATTERY_PIN = 35
-DELAY_BEFORE_NOTIFICATION = 30 # 30 mins
+DELAY_BEFORE_NOTIFICATION = 40 # 40 mins
 
 def do_connect():
     wlan = network.WLAN(network.STA_IF)
@@ -156,7 +156,7 @@ class WashingMachine:
         elif reason == machine.PIN_WAKE:
             print('Woke due to interrupt')
             self.check_new_params()
-            self.send_notification()
+            # self.send_notification()
             self.sleep_before_notification()
 
         # Loop required so that we can push new code
