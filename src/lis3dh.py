@@ -6,8 +6,8 @@ import struct
 class Lis3dh(I2CDevice):
 
     ID = 0x19
-    SCL = 22
-    SDA = 21
+    SCL = 36
+    SDA = 37
     WHO_AM_I = 0x0f
     WHO_AM_I_ID = 0x33
 
@@ -69,8 +69,8 @@ class Lis3dh(I2CDevice):
         self.set_sensitivity(2)
 
         # Duration the acceleration must be above the threshold before triggering the
-        # interrupt. 50/1hz = 5s
-        self.set_duration(5)
+        # interrupt. 50/1hz = 1s
+        self.set_duration(1)
 
         # Read the reference register to set the reference acceleration values against which
         # we compare current values for interrupt generation

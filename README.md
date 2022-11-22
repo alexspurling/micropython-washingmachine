@@ -1,4 +1,24 @@
-### Steps to deploy the project to an ESP32
+### Steps to deploy the project to an ESPS3 on Windows
+
+1. Make sure python 3.10 is installed
+2. Install esptool
+   ```
+   pip install esptool
+   ```
+3. Download micropython firmware from https://micropython.org/download/GENERIC_S3/
+4. Flash your device and install the firmware with esptool
+   ```
+   esptool.py --chip esp32s3 --port COM3 erase_flash
+   esptool.py --chip esp32s3 --port COM3 write_flash -z 0 "Downloads\GENERIC_S3-20220618-v1.19.1.bin"
+   ```
+5. Fix your python3.10 install according to the instructions: https://stackoverflow.com/questions/69515086/error-attributeerror-collections-has-no-attribute-callable-using-beautifu
+6. Install rshell
+   ```
+   pip install rshell
+   ```
+7. Run 
+
+### Steps to deploy the project to an ESP32 on Mac
 
 1. Install python 3.9 use pyenv to update your `python` command from python 2 to 3
 2. Install esptool

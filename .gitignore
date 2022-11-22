@@ -1,3 +1,3 @@
 .idea/
 *.iml
-secrets.py
+src/secrets.py
