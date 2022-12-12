@@ -1,3 +1,4 @@
 .idea/
 *.iml
 src/secrets.py
+__pycache__/

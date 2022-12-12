@@ -15,7 +15,7 @@ LED_PIN = 34
 INT_PIN = 7
 BATTERY_EN_PIN = 14
 BATTERY_PIN = 35
-DELAY_BEFORE_NOTIFICATION = 40 # 40 mins
+DELAY_BEFORE_NOTIFICATION = 40  # 40 mins
 
 
 def do_connect():
@@ -82,26 +82,6 @@ class WashingMachine:
                 self.save_settings(sensitivity, duration)
 
     def get_battery_percentage(self):
-        # battery_en_pin = Pin(BATTERY_EN_PIN, mode=Pin.OUT)
-        # battery_en_pin.on()
-
-        # Sample 3 values from the ADC
-        adc_values = []
-
-        # adc = ADC(Pin(BATTERY_PIN, mode=Pin.IN))
-        # adc.atten(ADC.ATTN_11DB)
-        # adc.width(ADC.WIDTH_12BIT)
-
-        # for i in range(0, 3):
-        #     time.sleep(0.01)
-        #     adcread = adc.read()
-        #     print('adc read', adcread)
-        #     adc_values.append(adcread)
-        # adc_value = sum(adc_values) / len(adc_values)
-
-        # battery_en_pin.off()
-
-        # adc_voltage = adc_value * 3.3 / 4095
 
         adc_voltage = bees3.get_battery_voltage()
 
@@ -142,84 +122,52 @@ class WashingMachine:
         else:
             machine.deepsleep()
 
-    def blink(self):
+    def blink(self, times):
         bees3.set_rgb_power(True)
 
         pixel = neopixel.NeoPixel(Pin(bees3.RGB_DATA), 1)
         pixel[0] = (0, 0, 255, 1)
         pixel.write()
 
-        while True:
+        for i in range(times):
             self.led.on()
             pixel[0] = (0, 0, 255, 1)
             pixel.write()
             time.sleep(0.05)
             self.led.off()
-            time.sleep(0.95)
+            time.sleep(0.3)
 
     def start(self):
 
         print('Starting LED thread')
-        # Threading support in micropython 1.17 is experimental but it seems to work
-        _thread.start_new_thread(self.blink, (), {})
+        self.blink(1)
 
         reason = machine.wake_reason()
 
         print('Got wake reason: ', reason)
         if reason == machine.TIMER_WAKE:
+            self.blink(1)
             print('Woke due to timer')
             self.check_new_params()
             self.send_notification()
             self.wait_for_next_wake()
         elif reason == machine.PIN_WAKE:
+            self.blink(2)
             print('Woke due to interrupt')
             self.check_new_params()
-            self.send_notification()
+            # self.send_notification()
             self.sleep_before_notification()
 
-        print('Sleeping for 90 seconds')
+        print('Sleeping for 30 seconds')
         # Loop required so that we can push new code
         # You need to reset (press the button) to get to this part
-        for i in range(0, 90):
+        for i in range(0, 30):
             print(i)
             time.sleep(1)
 
         print('Going to sleep')
 
         self.wait_for_next_wake()
-
-    # def rgb(self):
-    #     bees.set_rgb_power(True)
-    #
-    #     color_index = 0
-    #
-    #     blink_count = 0
-    #     pixel = neopixel.NeoPixel(Pin(bees.RGB_DATA), 1)
-    #
-    #     # Rainbow colours on the NeoPixel
-    #     while True:
-    #         # Get the R,G,B values of the next colour
-    #         if blink_count < 100:
-    #             r, g, b = bees.rgb_color_wheel(color_index)
-    #             # Set the colour on the NeoPixel
-    #             pixel[0] = (r, g, b, 1)
-    #             pixel.write()
-    #         else:
-    #             pixel[0] = (0, 0, 0, 0)
-    #             pixel.write()
-    #
-    #         # Increase the wheel index
-    #         color_index += 1
-    #         blink_count += 1
-    #
-    #         # If the index == 255, loop it
-    #         if color_index == 255:
-    #             color_index = 0
-    #             # Invert the internal LED state every half colour cycle
-    #         if blink_count == 20:
-    #             blink_count = 0
-    #         # Sleep for 15ms so the colour cycle isn't too fast
-    #         time.sleep(0.005)
 
 
 def run():

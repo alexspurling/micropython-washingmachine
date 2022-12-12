@@ -11,12 +11,11 @@
    esptool.py --chip esp32s3 --port COM3 erase_flash
    esptool.py --chip esp32s3 --port COM3 write_flash -z 0 "Downloads\GENERIC_S3-20220618-v1.19.1.bin"
    ```
-5. Fix your python3.10 install according to the instructions: https://stackoverflow.com/questions/69515086/error-attributeerror-collections-has-no-attribute-callable-using-beautifu
-6. Install rshell
+5. To push to the board (press the reset button if necessary to put the board into its initial boot mode):
    ```
-   pip install rshell
+   python3 push.py
    ```
-7. Run 
+6. To view the serial output, use PuTTY and connect to serial port COM5
 
 ### Steps to deploy the project to an ESP32 on Mac
 
@@ -26,25 +25,15 @@
    pip install esptool
    ```
 3. Download micropython firmware from https://micropython.org/download/esp32
-4. Flash your device and install the firmware with esptool
+4. Find the device name (could be /dev/tty.SLAB_USBtoUART or /dev/tty.usbserial-01613E00 or something similar)
+5. Flash your device and install the firmware with esptool
    ```
    esptool.py --chip esp32 --port /dev/tty.usbserial-01613E00 erase_flash
    esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20210902-v1.17.bin
    ```
-5. Install mpremote
+6. To push to the board (press the reset button if necessary to put the board into its initial boot mode):
    ```
-   pip install mpremote
-   ```
-6. Connect to the device
-   ```
-   $ mpremote connect /dev/tty.usbserial-01613E00 ls
-   ls :
-   139 boot.py
-   143 main.py
-   ```
-7. Run the `push.sh` script
-   ```
-   $ ./push.py
+   python3 push.py
    ```
 
 ### Steps to set up IntelliJ IDEA
