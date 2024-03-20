@@ -37,7 +37,7 @@ def file_hash(f):
     return sha.hexdigest()
 
 
-serial_device = "COM5"
+serial_device = "COM3"
 source_dir = "src"
 
 pyb = pyboard.Pyboard(serial_device)

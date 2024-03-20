@@ -21,20 +21,29 @@ def get_messages():
     last_update_filename = 'lastupdateid.txt'
 
     try:
+        print(f"Opening file {last_update_filename}")
         with open(last_update_filename, 'r') as f:
+            print(f"Opened file {last_update_filename}")
             last_update_id = f.readline()
-    except Exception:
+    except Exception as e:
+        print(f"Error opening file {last_update_filename}", e)
         last_update_id = None
 
     print(f'Using last update id: {last_update_id}')
 
     url = f'https://api.telegram.org/bot{secrets.TELEGRAM_API_KEY}/getUpdates'
 
+    print(f"Using telegram url: {url}")
+
     data = None
     if last_update_id:
         data = {"offset": int(last_update_id)}
 
+    print(f"Using data: {data}")
+
     messages = MicroWebCli.JSONRequest(url, data)
+
+    print(f"Got messages: {messages}")
 
     if messages is None:
         messages = {}

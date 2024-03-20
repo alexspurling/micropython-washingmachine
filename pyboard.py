@@ -277,7 +277,8 @@ class Pyboard:
                 try:
                     self.serial = serial.Serial(device, **serial_kwargs)
                     break
-                except (OSError, IOError):  # Py2 and Py3 have different errors
+                except (OSError, IOError) as e:  # Py2 and Py3 have different errors
+                    print("Error: ", e)
                     if wait == 0:
                         continue
                     if attempt == 0:
