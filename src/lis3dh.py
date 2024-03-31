@@ -7,7 +7,7 @@ class Lis3dh(I2CDevice):
 
     ID = 0x19
     SCL = 36
-    SDA = 37
+    SDA = 35
     WHO_AM_I = 0x0f
     WHO_AM_I_ID = 0x33
 

@@ -37,7 +37,7 @@ def file_hash(f):
     return sha.hexdigest()
 
 
-serial_device = "COM3"
+serial_device = "/dev/ttyACM0"
 source_dir = "src"
 
 pyb = pyboard.Pyboard(serial_device)
@@ -46,7 +46,7 @@ file_hash_map = {f[0]: f[1] for f in file_hashes(pyb)}
 for source_file in os.listdir(source_dir):
     if source_file.endswith(".py"):
         source_hash = file_hash(f"{source_dir}/{source_file}")
-        if source_hash != file_hash_map[source_file]:
+        if not (source_file in file_hash_map) or source_hash != file_hash_map[source_file]:
             print(f"Copying {source_dir}/{source_file}")
             pyboard.filesystem_command(pyb, ["cp", f"{source_dir}/{source_file}", ":"])
         else:

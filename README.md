@@ -1,4 +1,4 @@
-### Steps to deploy the project to an ESPS3 on Windows
+### Steps to deploy the project to an ESP32 S3 on Windows
 
 1. Make sure python 3.10 is installed
 2. Install esptool
@@ -17,24 +17,39 @@
    ```
 6. To view the serial output, use PuTTY and connect to serial port COM5
 
-### Steps to deploy the project to an ESP32 on Mac
+### Steps to deploy the project to an ESP32 S3 on Linux / Mac
 
 1. Install python 3.9 use pyenv to update your `python` command from python 2 to 3
 2. Install esptool
    ```
    pip install esptool
    ```
-3. Download micropython firmware from https://micropython.org/download/esp32
-4. Find the device name (could be /dev/tty.SLAB_USBtoUART or /dev/tty.usbserial-01613E00 or something similar)
+3. Download micropython firmware from https://micropython.org/download/GENERIC_S3/
+4. Find the device name (could be /dev/tty.SLAB_USBtoUART or /dev/tty.usbserial-01613E00 or /dev/ttyACM0 or something similar)
 5. Flash your device and install the firmware with esptool
    ```
-   esptool.py --chip esp32 --port /dev/tty.usbserial-01613E00 erase_flash
-   esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20210902-v1.17.bin
+   esptool.py --chip esp32 --port /dev/ttyACM0 erase_flash
+   esptool.py --chip esp32s3 --port /dev/ttyACM0 write_flash -z 0 ESP32_GENERIC_S3-20240222-v1.22.2.bin
    ```
 6. To push to the board (press the reset button if necessary to put the board into its initial boot mode):
    ```
    python3 push.py
    ```
+7. To view files run
+   ```bash
+   python3 pyboard.py -f ls
+   ```
+8. To monitor the serial output, simply run:
+   ```bash
+   python3 pyboard.py
+   ```
+   Or, use picocom:
+```bash
+  picocom /dev/ttyACM0 -b115200
+  (if the board is awake, just press return to get to the REPL)
+  (to reset to the board, press ctrl-d)
+  (to quit, press ctrl-a ctrl-x)
+```
 
 ### Steps to set up IntelliJ IDEA
 

@@ -1,20 +1,21 @@
 import time
 import machine
-from machine import Pin, ADC
+from machine import Pin
+from micropython import const
 import esp32
 from lis3dh import Lis3dh
 import telegram
 import network
 import secrets
 import json
-import _thread
 import neopixel
-import bees3
 
-LED_PIN = 34
-INT_PIN = 7
+
+RGB_LED_PIN = const(48)
+LED_PIN = const(34)
+INT_PIN = const(17)
 BATTERY_EN_PIN = 14
-BATTERY_PIN = 1
+BATTERY_PIN = 10
 DELAY_BEFORE_NOTIFICATION = 40  # 40 mins
 
 
@@ -81,56 +82,6 @@ class WashingMachine:
                 duration = int(match.group(2))
                 self.save_settings(sensitivity, duration)
 
-    def get_battery_voltage(self):
-
-        # Returns the current battery voltage.
-        adc1 = ADC(Pin(BATTERY_PIN))  # Assign the ADC pin to read
-        # We need to attenuate the input voltage so that we can read the full 0-3.3V range
-        adc1.atten(ADC.ATTN_11DB)
-        for _ in range(10):
-            adc1.read()
-
-        # adc3 = ADC(Pin(10))  # Assign the ADC pin to read
-        # adc3.atten(ADC.ATTN_11DB)
-        # for _ in range(10):
-        #     adc3.read()
-
-        adc1_value = adc1.read()
-        voltage1 = adc1_value / 4096 * 3.3
-        s3voltage = voltage1 / (422000 / (160000 + 422000))
-
-        # adc3_value = adc3.read()
-        # voltage3 = adc3_value / 4096 * 3.3
-        # wakeboardvoltage = voltage3 * 2
-
-        return s3voltage
-
-    def get_battery_percentage(self):
-
-        battery_voltage = self.get_battery_voltage()
-
-        print('battery_voltage:', battery_voltage)
-
-        # voltage divider uses 100k / 330k ohm resistors
-        # 4.3V -> 3.223, 2.4 -> 1.842
-        # expected_max = 4.3*330/(100+330)
-        # expected_min = 2.8*330/(100+330)
-
-        # BeeS3 measured resistances:
-        # R1 = 161K  (code 164)
-        # R2 = 390K (code 61D seems to refer to 422K so bit confused about this)
-
-        # BeeS3 spec resistances:
-        # R1 = 442K
-        # R2 = 160K
-
-        expected_max = 4.2
-        expected_min = 3.1
-
-        battery_level = (battery_voltage - expected_min) / (expected_max - expected_min)
-        battery_percentage = max(min(battery_level * 100.0, 100), 0)
-        return battery_percentage, battery_voltage
-
     def send_notification(self):
         do_connect()
         print('Sending notification...')
@@ -156,9 +107,9 @@ class WashingMachine:
             machine.deepsleep()
 
     def blink(self, times):
-        bees3.set_rgb_power(True)
+        Pin(LED_PIN, Pin.OUT).on()
 
-        pixel = neopixel.NeoPixel(Pin(bees3.RGB_DATA), 1)
+        pixel = neopixel.NeoPixel(Pin(RGB_LED_PIN), 1)
         pixel[0] = (0, 0, 255, 1)
         pixel.write()
 
