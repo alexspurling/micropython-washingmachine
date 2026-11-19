@@ -9,6 +9,8 @@ import network
 import secrets
 import json
 import neopixel
+import battery
+import homeassistant
 
 
 RGB_LED_PIN = const(48)
@@ -16,7 +18,34 @@ LED_PIN = const(34)
 INT_PIN = const(17)
 BATTERY_EN_PIN = 14
 BATTERY_PIN = 10
-DELAY_BEFORE_NOTIFICATION = 40  # 40 mins
+DELAY_BEFORE_NOTIFICATION = 35  # 35 mins
+DAILY_SLEEP_MS = 24 * 60 * 60 * 1000  # 24 hours
+
+# Flag file that lives on the board's flash filesystem.
+# Written before a 35-min notification sleep; checked on timer wake to
+# distinguish "notification due" from "daily battery report".
+PENDING_NOTIFICATION_FILE = 'pending_notification'
+
+
+def _pending_notification_set():
+    try:
+        with open(PENDING_NOTIFICATION_FILE, 'r') as f:
+            return True
+    except OSError:
+        return False
+
+
+def _pending_notification_write():
+    with open(PENDING_NOTIFICATION_FILE, 'w') as f:
+        f.write('1')
+
+
+def _pending_notification_clear():
+    try:
+        import uos
+        uos.remove(PENDING_NOTIFICATION_FILE)
+    except OSError:
+        pass
 
 
 def do_connect():
@@ -85,10 +114,27 @@ class WashingMachine:
     def send_notification(self):
         do_connect()
         print('Sending notification...')
-        battery, battery_voltage = self.get_battery_percentage()
-        print('Battery:', battery)
-        result = telegram.send_message(f'Washing done! Battery {battery:.2f}% ({battery_voltage:.2f}V)')
+        adc, pct, voltage = battery.get_battery_percentage()
+        print('Battery:', pct)
+        result = telegram.send_message(f'Washing done! Battery {pct:.2f}% ({voltage:.2f}V)')
         print(result)
+
+    def report_battery_to_ha(self):
+        do_connect()
+        print('Reporting battery to Home Assistant...')
+        try:
+            adc_value, pct, voltage = battery.get_battery_percentage()
+            homeassistant.report_battery(pct, voltage)
+        except Exception as e:
+            print('Failed to report battery to HA:', e)
+
+    def report_wash_event_to_ha(self):
+        do_connect()
+        print('Reporting wash event to Home Assistant...')
+        try:
+            homeassistant.report_wash_event()
+        except Exception as e:
+            print('Failed to report wash event to HA:', e)
 
     def sleep_before_notification(self):
         self.sleep(DELAY_BEFORE_NOTIFICATION * 60 * 1000)
@@ -96,7 +142,7 @@ class WashingMachine:
     def wait_for_next_wake(self):
         wake1 = Pin(INT_PIN, mode=Pin.IN)
         esp32.wake_on_ext0(pin=wake1, level=esp32.WAKEUP_ANY_HIGH)
-        self.sleep()
+        self.sleep(DAILY_SLEEP_MS)  # Max 24h — pin interrupt wakes sooner
 
     def sleep(self, time=None):
         self.led.off()
@@ -131,28 +177,37 @@ class WashingMachine:
         print('Got wake reason: ', reason)
         if reason == machine.TIMER_WAKE:
             self.blink(1)
-            print('Woke due to timer')
-            print('Checking for new params')
-            self.check_new_params()
-            print('Sending notification')
-            self.send_notification()
+            if _pending_notification_set():
+                # 35-min notification timer after vibration detected
+                print('Woke due to notification timer')
+                print('Checking for new params')
+                self.check_new_params()
+                print('Sending notification')
+                self.send_notification()
+                self.report_wash_event_to_ha()
+                _pending_notification_clear()
+            else:
+                # Daily battery-report timer (24h elapsed with no vibration)
+                print('Woke due to daily timer')
         elif reason == machine.PIN_WAKE:
             self.blink(2)
             print('Woke due to interrupt')
-            # self.check_new_params()
-            # self.send_notification()
+            _pending_notification_write()
             print('Going to deepsleep')
             self.sleep_before_notification()
         else:
             print('Sleeping for 30 seconds')
             # Loop required so that we can push new code
             # You need to reset (press the button) to get to this part
-            for i in range(0, 30):
+            for i in range(0, 15):
                 print(i)
                 time.sleep(1)
 
         print('Loading accelerometer settings before going to sleep')
         self.load_settings()
+
+        print('Reporting battery to Home Assistant')
+        self.report_battery_to_ha()
 
         print('Going to deepsleep')
         self.wait_for_next_wake()
