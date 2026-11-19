@@ -1,0 +1,10 @@
+[project]
+name = "micropython-washingmachine"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "esptool==5.6.0",
+    "micropython-esp32-s3-stubs==1.20.0.post1",
+    "requests>=2.34.2",
+]

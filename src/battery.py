@@ -1,6 +1,3 @@
-import time
-
-import math
 from micropython import const
 from machine import Pin, ADC
 
